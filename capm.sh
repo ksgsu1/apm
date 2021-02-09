@@ -81,7 +81,10 @@ default-character-set = utf8
 [mysqld_safe]
 log-error=/var/log/mysqld.log
 pid-file=/var/run/mysqld/mysqld.pid" >> /etc/my.cnf
+
 sed -i 's/$cfg['Servers'][$i]['port'] = ''; $cfg['Servers'][$i]['port']= '3306'; >> /etc/phpMyAdmin/config.inc.php
+service httpd restart
+
 yum -y install vsftpd
 mv /etc/localtime /etc/localtime_backup
 ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
