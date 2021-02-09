@@ -78,6 +78,6 @@ a2enmod rewrite
 systemctl restart apache2
 
 echo "write_enable=YES
-      local_umask=022" >> /etc/vsftpd.conf
+local_umask=022" >> /etc/vsftpd.conf
 
 service vsftpd restart
