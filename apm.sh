@@ -46,8 +46,8 @@ echo "<VirtualHost *:80>
     ErrorLog /var/logs/error_log
     CustomLog /var/logs/access_log common
 
-</VirtualHost> >> /etc/apache2/sites-available/webend.xyz.conf
-<VirtualHost *:80>
+</VirtualHost>" >> /etc/apache2/sites-available/webend.xyz.conf
+echo "<VirtualHost *:80>
     ServerName www.3dstudy.net
     ServerAlias 3dstudy.net www.3dstudy.net
 
