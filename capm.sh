@@ -2,7 +2,7 @@ yum -y install git
 yum -y update
 # selinux=disable 로 바꾼후 재부팅후 사용해야함  중요
 #sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/5.6/fpm/php.ini
-sed -i 's/SELINUX=enable/SELINUX=disable/' /etc/selinux/config
+sed -i 's/SELINUX=enforcing/SELINUX=disable/' /etc/selinux/config
 
 yum -y install psmisc
 rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
