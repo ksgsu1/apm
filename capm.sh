@@ -40,7 +40,8 @@ echo "<VirtualHost *:80>
         </Directory>
 </VirtualHost>" >> /etc/httpd/conf/sites-available/webend.xyz.conf
 
-ln -s /etc/httpd/sites-available/conf/webend.xyz.conf /etc/httpd/sites-enable/conf/webend.xyz.conf
+ln -s /etc/httpd/conf/sites-available/webend.xyz.conf /etc/httpd/conf/sites-enable/webend.xyz.conf
+
 mkdir /home/logs
 systemctl restart httpd
 
