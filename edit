@@ -1,0 +1,717 @@
+192.168.219.188 odroid
+192.168.219.118 promise
+192.168.219.112 linuxserver
+
+우분투 20 APM + NEXTCLOUD + SSL 설치 정치
+
+apt -y install git \
+&& cd /root/ \
+&& git clone https://github.com/ksgsu1/apm.git  \
+&& cd apm \
+&& sh apm.sh
+
+#!/bin/sh  -- vi apm.sh
+sudo rm /var/lib/apt/lists/lock 
+sudo rm /var/cache/apt/archives/lock 
+sudo rm /var/lib/dpkg/lock* 
+sudo dpkg --configure -a  
+apt-get update; apt-get upgrade -y
+sudo apt install ssh
+sudo apt install vim -y
+sudo apt install net-tools
+sudo apt install vsftpd -y
+sudo apt install mariadb-server libapache2-mod-php7.4 -y
+sudo apt install php7.4-gd php7.4-json php7.4-mysql php7.4-curl php7.4-mbstring -y
+sudo apt install php7.4-intl php-imagick php7.4-xml php7.4-zip php7.4-bcmath php7.4-gmp -y
+sudo apt install phpmyadmin -y
+
+echo "<VirtualHost *:80>
+    ServerName www.webend.xyz
+    ServerAlias webend.xyz www.webend.xyz
+
+    DocumentRoot /home/intro
+
+    <Directory /home/*>
+        Options FollowSymLinks MultiViews
+        AllowOverride All
+        require all granted
+    </Directory>
+
+    ErrorLog /var/logs/error_log
+    CustomLog /var/logs/access_log common
+
+</VirtualHost>" >> /etc/apache2/sites-available/webend.xyz.conf
+echo "<VirtualHost *:80>
+    ServerName www.3dstudy.net
+    ServerAlias 3dstudy.net www.3dstudy.net
+
+    DocumentRoot /home/end
+
+    <Directory /home/*>
+        Options FollowSymLinks MultiViews
+        AllowOverride All
+        require all granted
+    </Directory>
+
+    ErrorLog /var/logs/error_log
+    CustomLog /var/logs/access_log common
+
+</VirtualHost>" >> /etc/apache2/sites-available/3dstudy.net.conf
+
+mkidr /var/logs
+
+ln -s /etc/apache2/sites-available/webend.xyz.conf /etc/apache2/sites-enabled/webend.xyz.conf
+ln -s /etc/apache2/sites-available/3dstudy.net.conf /etc/apache2/sites-enabled/3dstudy.net.conf
+
+a2ensite webend.xyz.conf 
+a2ensite 3dstudy.net.conf
+a2enmod rewrite
+
+#아파치 restart
+systemctl restart apache2
+
+echo "write_enable=YES
+      local_umask=022" >> /etc/vsftpd.conf
+
+service vsftpd restart
+
+
+
+여기까지 끝
+
+끝
+sudo mysql_secure_installation
+
+phpmyadmin 설정 루트
+
+SELECT user,host,plugin,authentication_string FROM mysql.user;
+set password = password("!Speeds0119");
+use mysql;
+update user set plugin='mysql_native_password' where user='root';
+set password = password("!Speeds0119");
+flush privileges;
+SELECT user,host,plugin,authentication_string FROM mysql.user;
+
+
+
+업데이트
+
+apt-get update; apt-get upgrade -y
+
+한글설정 데스크탑 사용시는 사용 안함
+
+apt-get install -y language-pack-ko-base
+
+apt-get install ttf-unfonts-core
+
+update-locale LANG=ko_KR.UTF-8
+
+APM 설치
+
+# 아파치, 마리아DB
+#!/bin/sh  -- vi apm.sh 만들기
+sudo apt install mariadb-server libapache2-mod-php7.2 -y
+sudo apt install php7.4-gd php7.4-json php7.4-mysql php7.4-curl php7.4-mbstring -y
+sudo apt install php7.4-intl php-imagick php7.4-xml php7.4-zip php7.4-bcmath php7.4-gmp -y
+
+vi /etc/apache2/apache2.conf
+
+Include /etc/phpmyadmin/apache.conf
+
+<VirtualHost *:80>
+    ServerName www.webend.xyz
+    ServerAlias webend.xyz www.webend.xyz
+    ServerAdmin ceo@webend.xyz
+    DocumentRoot /home/intro
+    # chmod -R 755 path
+
+    ErrorLog /var/logs/error.log
+    CustomLog /var/logs/access.log combined
+
+    <Directory /home/*>
+        Options All
+        AllowOverride All
+        Require all granted
+# rewrite 명령어
+# sudo a2enmod rewrite
+# sudo systemctl restart apache2
+#        RewriteEngine on
+#        RewriteCond %{REQUEST_URI} ^(.*)\.(html|htm|php|lib|act|pcls|pexe)$
+#:wq:        RewriteRule . /var/www/html/phindol.com/System/enter.php [L]
+    </Directory>
+</VirtualHost>
+
+
+ln -s /etc/apache2/sites-available/webend.xyz.conf /etc/apache2/sites-enabled/webend.xyz.conf 
+
+MariaDB 설정
+
+
+sudo apt-get install phpmyadmin -y	
+
+phpmyadmin 설정 루트
+
+SELECT user,host,plugin,authentication_string FROM mysql.user;
+set password = password("!Speeds0119");
+use mysql;
+update user set plugin='mysql_native_password' where user='root';
+set password = password("!Speeds0119");
+flush privileges;
+SELECT user,host,plugin,authentication_string FROM mysql.user;
+
+
+
+
+php.ini 설정
+short_open_tag = On
+
+a2ensite webend.xyz.conf 
+a2ensite 3dstudy.net.conf
+a2enmod rewrite
+
+SSL 설정?
+
+sudo apache2ctl configtest
+sudo systemctl reload apache2
+
+
+
+https 인증서 무료발급 하기
+
+sudo apt install epel-release
+설치
+sudo apt install python-certbot-apache
+인증서 발급
+
+certbot --apache -d webend.xyz
+
+certbot --apache -d webend.xyz -d www.webend.xyz
+인증서 갱신
+certbot renew
+
+참고 내용: nVidia 드라이버 설치 
+nVidia Graphic 드라이버는 ubuntu-drivers autoinstall 명령어를 사용해서 PC에 설치된 그래픽 하드웨어 맞게 설치 가능합니다. 
+
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt update
+sudo ubuntu-drivers autoinstall
+sudo reboot
+
+#nvdia 설치 확인 
+
+nvidia-settings
+
+nextcloud.conf
+
+<VirtualHost *:80>
+     ServerName 192.168.10.5
+     DocumentRoot /home/bbs
+ </VirtualHost>
+Alias /nextcloud "/home/nextcloud/"
+<Directory /home/*>
+  Require all granted
+  Options FollowSymlinks MultiViews
+  AllowOverride All
+ <IfModule mod_dav.c>
+  Dav off
+ </IfModule>
+ SetEnv HOME /home/nextcloud
+ SetEnv HTTP_HOME /home/nextcloud
+</Directory>
+
+
+a2ensite webend.xyz.conf 
+a2enmod rewrite
+
+
+SSL 설정?
+
+
+
+sudo apache2ctl configtest
+sudo systemctl reload apache2
+
+
+MariaDB 설정
+
+sudo mysql_secure_installation
+
+https 설정
+
+apt install software-properties-common
+add-apt-repository universe
+add-apt-repository ppa:certbot/certbot
+apt update
+certbot --apache -d 3dstudy.net.conf
+certbot certonly --apache -d 3dstdy.net.conf
+certbot renew
+add-apt-repository ppa:certbot/certbot
+letsencrypt certonly --webroot --webroot-path=/home/gnuboard/3dstudy.net.conf -d 3dstudy.net -d www.3dstdy.net
+service apachd2 restart
+
+
+우분투 하드 복사
+
+dd if=/dev/sda of=/dev/sdb bs=512k
+
+
+NEXTCLOUD 설치
+
+tar -xjf nextcloud-x.y.z.tar.bz2
+sudo cp -r nextcloud /var/www
+3. Apache 웹서버 설정
+vi /etc/apache2/sites-available/nextcloud.conf 을 생성한다.
+
+# /etc/apache2/sites-available/nextcloud.conf
+Alias /nextcloud "/var/www/nextcloud/"
+<Directory /var/www/nextcloud/>
+  Require all granted
+  Options FollowSymlinks MultiViews
+  AllowOverride All
+ <IfModule mod_dav.c>
+  Dav off
+ </IfModule>
+ SetEnv HOME /var/www/nextcloud
+ SetEnv HTTP_HOME /var/www/nextcloud
+</Directory>
+또는, 기존 홈페이지와는 다른 포트로 접속하기를 원한다면, 다음과 같이 nextcloud.conf 파일을 작성한다.
+단, 위 내용은 Nextcloud 와 동일하지만, 아래는 내가 임의로 수정했기 때문에, 어떤 오류가 발생할지는..?
+
+Listen 8181
+<VirtualHost *:8181>
+        Alias /nextcloud "/var/www/nextcloud/"
+        <Directory /var/www/nextcloud/>
+          Require all granted
+          Options FollowSymlinks MultiViews
+          AllowOverride All
+         <IfModule mod_dav.c>
+          Dav off
+         </IfModule>
+         SetEnv HOME /var/www/nextcloud
+         SetEnv HTTP_HOME /var/www/nextcloud
+        </Directory>
+</VirtualHost>
+그리고 다음 명령들을 실행한다. 모두 관리자 권한이 필요하다.
+
+
+
+
+위 명령을 실행하고, 시키는 대로 입력하면 된다. root 를 사용할 지, 암호는 무엇으로 할 지등등을 입력해야한다.
+다만, mysql root 비밀번호는 바꾸지 말고 그대로 둔다. 즉, 기본값(암호 없음)으로 그냥 놔둔다. 이에 관한 길고도 지루한 얘기는 다른 글에서 다뤘다.
+
+10.1 을 사용하고, mysql root 를 일반 사용자 계정으로 사용하게끔 하려면, 몇가지 단계가 더 필요하다.
+그러나, 그러지 말고 그냥 시스템 관리자(root)와 mysql 관리자(mysql root)를 같은 수준으로 취급하는 편이 요즘 추세라고 보여진다.
+
+정리하자면, MariaDB 에서 mysql root 를 따로 만들지 말고, 그냥 sudo mysql 을 통해 DB 에 접근한 뒤, 5.2 방식으로 설치할 것!
+
+따라서, 5.1 은 참고용으로 그냥 기록해놓았고, 실제 설치는 5.2 방식대로 하기로 한다.
+
+5.1 Nextcloud Commandline 설치 : occ 명령
+이 명령은, php occ 스크립트를 실행하여 일련의 설치를 마무리하게 해준다. Nextcloud 에서 제안하는 방법과는 권한 면에서 조금 다르다.
+
+먼저, sudo 를 사용해서 php occ 를 실행한다. (Nextcloud 에서는 www-data 로 하여금 php occ 를 실행하도록 하고 있다.)
+
+/var/www/nextcloud 로 이동한 후, 다음 명령을 실행한다.
+
+cd /var/www/nextcloud/
+sudo php occ maintenance:install --database "mysql" --database-name "cloud" --database-user "cloud" --database-pass "introsi" --admin-user "intro" --admin-pass "introsi"
+–database-pass 는 “”, 즉 passwordless 로 해줘야 제대로 작동한다.
+관리자ID, 관리자PW 는 원하는대로 지정한다.
+이 작업은 (서버 성능에 따라 다르지만) 시간이 좀 걸리므로, 조급해하지 말지어다!
+
+오류가 없이 작업이 끝났으면, 이제 /var/www/nextcloud 디렉토리의 소유권을 apache 사용자(www-data)로 바꿔줘야한다.
+
+sudo chown -R www-data:www-data /var/www/nextcloud/
+여기서, “root” 뒤에 나오는 “암호” 는, 위 MariaDB 에서 설정해준, mysql root 의 PW 를 넣어줘야 한다.
+“관리자ID” 와 “관리자PW” 는, 원하는 대로 정해서 넣어준다.
+
+5.2 Nextcloud Commandline 설치 : 수동 DB 설정 및 웹 사용.
+occ 를 사용하지 않고, 수동으로 DB 를 설정한 뒤 Nextcloud 설치를 마무리할 수도 있다. nextcloud 포럼을 참고했는데, 어떤 문제가 있을 지는 모르겠다.
+USER, PW(IDENTIFIED BY) 는 적절히 설정한다.
+
+$ sudo mysql
+MariaDB [(none)]> CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY 'netxtcloud';
+MariaDB [(none)]> CREATE DATABASE IF NOT EXISTS nextcloud;
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost' IDENTIFIED BY 'nextcloud';
+DB 생성이 끝났으면, 디렉토리 소유권을 아래처럼 바꿔준다. (물론 DB 만들기 전에 해도 된다.)
+
+sudo chown -R www-data:www-data /var/www/nextcloud/
+이후, 웹브라우저으로 접속하면, 아래 그림처럼, 관리자계정/PW, 바로 위에서 설정한 DB 관리자의 ID/PW 를 입력할 대화상자가 표시된다. 그곳에 입력해주고 마무리하면 된다.
+
+** 여기를 occ 명령을 이용해서 마무리 할 수도 있을 듯 한데..
+굳이 그럴 필요가 있을까?
+웹브라우저로 해도 전혀 무리가 없으므로, occ 는 고려하지 않기로 한다.
+
+Nextcloud 관리자 계정과 DB 관리자 계정은 ‘서로 다름’을 기억해야 한다. (occ 로 만들면, DB 관리자 계정이 oc_xxx 형식으로 생성된다.)
+
+
+6. 접속 및 최종 설정
+기본 설정은 모두 끝났다. 웹브라우저로 접속하면, 다음과 같은 초기 화면이 나온다.
+
+
+위에서 설정한 admin ID/PW 로 접속한다.
+
+이후, 설정 – Overview 를 통해 버전을 확인하고, ‘보안 및 설치 경고’에서 제안하는 내용을 반영한다.
+
+6.1 Trusted Domain 추가.
+
+최초 접근은 IP/nextcloud 로 가능한데, 이걸 외부로 연결(Port Fowarding 등)하거나, 아니면 도메인과 연결시켰을 경우엔, 지금 설정으론 그런 곳으로부터 접근이 불가능하다.
+
+/var/www/nextcloud/config/config.php 파일을 열고, 아래 부분을 적절하게 수정한다.
+
+  'trusted_domains' => 
+  array (
+    0 => '192.168.0.3',
+    1 => 'www.abcd.org',
+  ),
+2, 3, 4 등으로 도메인을 추가할 수도 있다. 공인 IP 로 접속하려면 그 주소도 넣어준다.
+
+7. 로컬 드라이브 추가
+설명서는 그다지 친절하지 않다. 그래도 연결은 걸어놓았다.
+
+우상귀 메뉴를 누르고, ‘+ 앱‘을 선택한다.
+왼쪽 창에서, ‘비활성화된 앱‘ 을 누르고, ‘External storage support‘ 를 선택하고, ‘사용함’을 누른다.
+
+그리고, 다시 우상귀 메뉴에서 ‘설정’으로 가면, 화면 왼쪽 ‘관리’ 항목에 ‘외부 저장소’가 생겼음을 볼 수 있다. (‘개인’ 항목에도 있는데, 여기가 아니고 ‘관리’를 택해야 한다.)
+그리고, 아래 그림처럼 설정한다.
+
+
+8. 판올림 (CLI)
+Nextcloud 문서를 참고로, 다음과 같이 작업한다.
+
+cd /var/www/nextcloud/updater
+sudo -u www-data php updater.phar
+Nextcloud Updater - version: v15.0.7-4-ged74b90
+Current version is 15.0.8.
+Update to Nextcloud 16.0.1 available. (channel: "stable")
+Following file will be downloaded automatically: https://download.nextcloud.com/server/releases/nextcloud-16.0.1.zip
+Steps that will be executed:
+[ ] Check for expected files
+[ ] Check for write permissions
+[ ] Create backup
+[ ] Downloading
+[ ] Verify integrity
+[ ] Extracting
+[ ] Enable maintenance mode
+[ ] Replace entry points
+[ ] Delete old files
+[ ] Move new files in place
+[ ] Done
+Start update? [y/N] 
+여기에서 y 를 선택하면 이제 일련의 과정이 진행되어야 하는데..(?)
+이런 오류가 나버렸다.
+
+[✘] Check for expected files failed
+The following extra files have been found:
+    .rnd
+Update failed. To resume or retry just execute the updater again.
+왜 그런지, .rnd 라는 파일이 있다고 한다. 어디서, 왜 이 파일이 생성되었는지 모르겠으나, 그냥 가볍게 지워버리면 된다.
+
+sudo rm /var/www/nextcloud/.rnd
+그리고 updater.phar 를 다시 실행하면, 이제 제대로 판올림 작업이 진행된다.
+
+Start update? [y/N] y
+Info: Pressing Ctrl-C will finish the currently running step and then stops the updater.
+[✔] Check for expected files
+[✔] Check for write permissions
+[✔] Create backup
+[✔] Downloading
+[✔] Verify integrity
+[✔] Extracting
+[✔] Enable maintenance mode
+[✔] Replace entry points
+[✔] Delete old files
+[✔] Move new files in place
+[✔] Done
+Update of code successful.
+Should the "occ upgrade" command be executed? [Y/n] 
+확인 작업이 이상없이 완료되면, 최종 결정(occ upgrade)만 남았다.
+Y 를 택하면 또 여러가지 작업들이 수행되고..
+
+2019-06-27T05:18:38+00:00 Repair info: Sending notifications to admins and affected users
+2019-06-27T05:18:38+00:00 Repair info: Removed potentially over exposing link shares
+2019-06-27T05:18:38+00:00 Starting code integrity check...
+2019-06-27T05:18:41+00:00 Finished code integrity check
+2019-06-27T05:18:41+00:00 Update successful
+2019-06-27T05:18:41+00:00 Maintenance mode is kept active
+2019-06-27T05:18:41+00:00 Reset log level
+Keep maintenance mode active? [y/N]
+Maintenance mode disabled
+Maintenance mode is disabled
+관리 상태(maintenance mode)를 유지하겠냐고 묻는데, 해제(N)를 택한다.
+판올림이 끝났다. 웹브라우저에서 ‘설정’ – ‘Overview’ 를 통해 버전을 확인해볼 수 있다.
+
+** 판올림 오류
+
+updater.phar 실행 시, Downloading 에서 멈추고 더 이상 진행되지 않는 경우가 있다. 검색해보니 이런 경우가 종종 발생하는 듯 하다.
+
+이럴 땐 몇시간(?)을 기다려도 진행이 되지 않는데, Ctrl-C 를 누르면 정지가 된다고 하지만, 결코 그렇질 못했다.
+
+일단, updater.phar 를 멈춰야 한다.
+
+$ ps -aux | grep updater                                                   :( 1 20-03-15 - 16:34:41
+root      2071  0.0  0.0  63508  4180 pts/0    S+   13:58   0:00 sudo -u www-data php updater.phar
+www-data  2072  0.1  0.5 434888 42536 pts/0    S+   13:58   0:12 php updater.phar
+PID 가 2072 이므로, 이것을 죽인다.
+
+sudo kil -9 2072
+그리고, Maintenance 에 진입한 Nextcloud 를 원상복구 시킨다.
+
+cd /var/www/nextcloud
+sudo -u www-data php occ maintenance:repair
+이러면 원 상태로 돌아오는데.. 왜 Downloading 시에 오류가 발생하는지는 알 수가 없다.
+아무튼, 오류가 발생하는 당시엔 계속해봐야 안되는 듯 하니, 시간이 좀 지난 뒤에 다시 해보는게 방법 밖엔 없을 듯.
+
+9. 경고 해제?
+설정 – Overview 에 가면 여러 경고들이 표시된다. (안나올 수도 있겠지만..)
+이중, 몇가지에 대해 해결책(?)을 정리한다.
+
+“PHP 메모리 제한이 추천값인 512MB보다 작습니다.” :
+위 값을 늘려주려면, php.ini 를 편집해야 한다. 배포판에 따라 이 파일 위치가 다 다른데, 우분투 18.04 에는 다음 위치에서 찾을 수 있다.
+
+/etc/php/7.4/apache2/php.ini
+위 파일을 열고, memory_limit = 128M 를 memory_limit = 512M 로 바꾼다.
+그리고 아파치를 재시동해주면 끝.
+
+sudo systemctl reload apache2
+웹 서버에서 “/.well-known/caldav”을(를) 올바르게 처리할 수 없습니다. 더 많은 정보를 보려면 문서를 참고하십시오.
+웹 서버에서 “/.well-known/carddav”을(를) 올바르게 처리할 수 없습니다. 더 많은 정보를 보려면 문서를 참고하십시오.
+위 두가지는, 당장 쓸 일이 없으므로 그냥 내버려 두기로 한다.
+
+사이트에 HTTP를 통해서 보안 없이 접근하고 있습니다. 보안 팁↗에서 제안하는 것처럼 HTTPS를 설정하는 것을 추천합니다.
+이 부분도 지금은 넘기고..
+
+메모리 캐시가 구성되지 않았습니다. 가능한 경우 memcache를 설정하여 성능을 향상시킬 수 있습니다. 자세한 내용은 문서를 참고하십시오.
+마찬가지로, 여기도 넘긴다. Nextcloud 를 많이 쓰면 모를까, 쓰임새가 그다지 많지 않기에, 일단은 그냥 넘기기로 한다.
+
+머신 온오프
+sudo -u www-data php occ maintenance:mode --on 
+
+온시킬경우
+유지 보수 모드
+이 앤드 인스턴스는 현재 점검 모드입니다. 시간이 걸릴 수도 있습니다. 인스턴스를 다시 사용할 수 있을 때 페이지를 자동으로 새로 고칩니다.
+
+이 메시지가 계속 표시되거나 예상하지 못하였을 때 표시된다면 시스템 관리자에게 연락하십시오. --- 일단 기다려봄
+
+occ
+db 테이블 만들기
+
+sudo -u www-data php /home/cloud/occ db:add-missing-indices
+sudo -u www-data php /var/www/nextcloud/ occ dav:sync-system-addressbook
+sudo -u www-data php /var/www/nextcloud/ occ federation:sync-addressbooks
+sudo -u www-data php /var/www/nextcloud/ occ encryption:status - enabled: false - defaultModule: OC_DEFAULT_MODULE
+sudo -u www-data php /var/www/nextcloud/ occ encryption:enable
+sudo -u www-data php /var/www/nextcloud/ occ Encryption enabled
+
+
+메모리 캐시가 구성되지 않았습니다. 가능한 경우 memcache를 설정하여 성능을 향상시킬 수 있습니다. 자세한 내용은 문서를 참고하십시오.
+마찬가지로, 여기도 넘긴다. Nextcloud 를 많이 쓰면 모를까, 쓰임새가 그다지 많지 않기에, 일단은 그냥 넘기기로 한다.
+
+머신 온오프
+sudo -u www-data php occ maintenance:mode --on 
+
+보안 및 설치 경고
+당신의 인스턴스의 보안과 성능을 위해서는 모든 것이 정확하게 설정되어야 합니다. 그러기 위해서 자동적으로 몇 가지를 확인하겠습니다. 더 자세한 정보를 위해서 링크된 문서를 참고하세요.
+
+설정을 살펴본 결과 몇 가지 에러가 있습니다.
+일부 파일이 무결성 검사를 통과하지 못했습니다. 이 문제를 해결하는 방법은 문서를 참고하십시오.(잘못된 파일 목록… / 다시 검색…)
+You are accessing your instance over a secure connection, however your instance is generating insecure URLs. This most likely means that you are behind a reverse proxy and the overwrite config variables are not set correctly. Please read the documentation page about this.
+Accessing site insecurely via HTTP. You are strongly advised to set up your server to require HTTPS instead, as described in the security tips ↗.
+웹 서버에서 "/.well-known/caldav"을(를) 올바르게 처리할 수 없습니다. 더 많은 정보를 보려면 문서를 참고하십시오.
+웹 서버에서 "/.well-known/carddav"을(를) 올바르게 처리할 수 없습니다. 더 많은 정보를 보려면 문서를 참고하십시오.
+설치 가이드 ↗를 다시 한 번 확인한 다음 로그의 경고나 에러를 확인하세요.
+
+우리의 보안 검사 ↗에서 당신의 Nextcloud의 보안을 점검하세요.
+
+
+메모리 캐시가 구성되지 않았습니다. 가능한 경우 memcache를 설정하여 성능을 향상시킬 수 있습니다. 자세한 내용은 문서를 참고하십시오.
+cd /var/www/nextcloud
+sudo -u www-data php occ maintenance:repair
+이러면 원 상태로 돌아오는데.. 왜 Downloading 시에 오류가 발생하는지는 알 수가 없다.
+아무튼, 오류가 발생하는 당시엔 계속해봐야 안되는 듯 하니, 시간이 좀 지난 뒤에 다시 해보는게 방법 밖엔 없을 듯.
+
+[mysqld]
+innodb_buffer_pool_size=1G
+innodb_io_capacity=4000
+
+
+버츄얼 호스트 설정
+<VirtualHost *:80>
+     ServerName 192.168.10.5
+     Serveradmin admin@3dstudy.net
+     ServerAlias 192.168.10.5
+     DocumentRoot /home/end
+     ErrorLog /var/logs/error.log
+     CustomLog /var/logs/access.log combined
+<Directory /home/*>
+  Require all granted
+  Options FollowSymlinks MultiViews
+  AllowOverride All
+ <IfModule mod_dav.c>
+  Dav off
+ </IfModule>
+</Directory>
+ </VirtualHost>
+
+ns4300
+login=engmode
+pwd=hawk201
+
+보안 및 설치 경고
+당신의 인스턴스의 보안과 성능을 위해서는 모든 것이 정확하게 설정되어야 합니다. 그러기 위해서 자동적으로 몇 가지를 확인하겠습니다. 더 자세한 정보를 위해서 링크된 문서를 참고하세요.
+
+설정을 살펴본 결과 몇 가지 에러가 있습니다.
+일부 파일이 무결성 검사를 통과하지 못했습니다. 이 문제를 해결하는 방법은 문서를 참고하십시오.(잘못된 파일 목록… / 다시 검색…)
+PHP configuration option output_buffering must be disabled
+You are accessing your instance over a secure connection, however your instance is generating insecure URLs. This most likely means that you are behind a reverse proxy and the overwrite config variables are not set correctly. Please read the documentation page about this.
+Accessing site insecurely via HTTP. You are strongly advised to set up your server to require HTTPS instead, as described in the security tips ↗.
+웹 서버에서 "/.well-known/caldav"을(를) 올바르게 처리할 수 없습니다. 더 많은 정보를 보려면 문서를 참고하십시오.
+웹 서버에서 "/.well-known/carddav"을(를) 올바르게 처리할 수 없습니다. 더 많은 정보를 보려면 문서를 참고하십시오.
+메모리 캐시가 구성되지 않았습니다. 가능한 경우 memcache를 설정하여 성능을 향상시킬 수 있습니다. 자세한 내용은 문서를 참고하십시오.
+추가 Apache 구성
+Nextcloud가 올바르게 작동하려면 모듈 mod_rewrite. 다음을 실행하여 활성화하십시오.
+
+a2enmod rewrite
+추가 권장 모듈은 mod_headers, mod_env, mod_dir및 mod_mime:
+
+a2enmod headers
+a2enmod env
+a2enmod dir
+a2enmod mime
+mod_fcgi표준 대신 실행 하는 경우 다음 mod_php을 활성화하십시오.
+
+a2enmod setenvif
+잘못된 문서에서는 .htaccess 해결
+
+데이터베이스에 일부 인덱스가 없습니다. 큰 테이블에 인덱스를 추가하는 데 시간이 걸리기 때문에 자동으로 추가하지 않았습니다. 명령행에서 "occ db:add-missing-indices" 명령을 실행하여 인스턴스를 실행하는 동안 수동으로 인덱스를 추가할 수 있습니다. 해당 테이블에 인덱스를 추가하면 질의 속도가 다시 빨라집니다.
+테이블 "oc_cards"에 인덱스 "cards_abiduri"이(가) 없습니다.
+설치 가이드 ↗를 다시 한 번 확인한 다음 로그의 경고나 에러를 확인하세요.
+
+sudo -u www-data php /home/cloud/occ db:add-missing-indices
+
+우리의 보안 검사 ↗에서 당신의 Nextcloud의 보안을 점검하세요.
+<Directory /home/*>
+Require all granted
+   AllowOverride All <-- 이분분 추가
+Options FollowSymlinks MultiViews
+Satisfy Any
+AllowOverride All
+<IfModule mod_dav.c>
+
+Dav on <-- Dav off 에서 온으로 설정 변경
+
+conf 80 에서 추가설정 http://cloud.3dstud.net -->  Redirect permanent / https:///cloud.3dstudy.net
+ 
+sudo -u www-data php occ maintenance:mode --on  --> 유지보수 모드로 화면 출력
+sudo -u www-data php occ maintenance:mode --off
+sudo -u www-data php console.php files:scan --all
+sudo -u www-data php occ maintenance:mode --off
+sudo -u www-data php occ upgrade
+sudo -u www-data php occ maintenance:repair
+
+a2enmod ssl
+a2ensite default-ssl
+service apache2 reload
+
+chown -R www-data:www-data cloud
+find cloud/ -type d -exec chmod 755 {} \;
+find cloud/ -type f -exec chmod 755 {} \;
+
+sudo apt-get install ase
+[Ubuntu] Docker / Docker-compose 설치
+약 1년 전 by 개발자 HoCheol Nam
+우분투 18.04.3 LTS 기준 작성입니다.
+
+
+환경
+vmware위의 우분투위에 일종의 vm인 도커를 깔다니 ㅎㅎ
+
+1. 사전 준비
+ curl등이 깔려있는지 한번 체크해봅시다.
+
+sudo apt update
+
+로 먼저 레포를 한번 업데이트해주고
+
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+
+으로 필요한 것들을 미리 설치해줍시다.
+
+설치되는 패키지들은
+
+curl, apt-transport-https, ca-certificates, software-properties-common
+
+입니다.
+
+ 
+
+2. 도커 설치를 위한 레포지토리 추가
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+그 다음
+
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+
+으로 레포를 추가해줍니다.
+
+ 
+
+3. 설치준비
+sudo apt update
+
+레포지토리를 추가했으니 한번 업데이트 시켜줘야 합니다. 그 다음
+
+apt-cache policy docker-ce
+
+를 입력합시다.
+
+
+도커 설치 준비
+아래와 같이 나오면 됩니다. 현재는 설치되지 않아서 "설치 : (없음)" 으로 나옵니다.
+
+영문판의 경우 install : (None) 일겁니다.. 아마?
+
+ 
+
+4. 설치
+그러면 이제 설치해봅시다.
+
+sudo apt install docker-ce
+
+를 이용하여 설치~
+
+sudo docker run -i -t -d --name intro ubuntu:20.04 /bin/bash
+sudo docker run -i -t -d --name hello2 ubuntu:20.04 /bin/bash
+sudo docker stop intro
+sudo docker ps -a
+
+onlyoffice 설정
+https://cloud.3dstudy.net/index.php/apps/documentserver_community/
+
+config.php
+<?php
+$CONFIG = array (
+  'instanceid' => 'ocskh84rngp0',
+  'passwordsalt' => 'jJrdiObf8LLAy0pa3xZP66pgQ6B6D8',
+  'secret' => 'bUOtSCNI0vE5px48CjHulIhkCTuZlanAkcYHQHXwEQeWPgLh',
+  'trusted_domains' =>
+  array (
+    0 => '192.168.219.188',
+  ),
+  'datadirectory' => '/var/www/nextcloud/data',
+  'dbtype' => 'mysql',
+  'version' => '20.0.7.1',
+  'overwrite.cli.url' => 'http://192.168.219.188/nextcloud',
+  'dbname' => 'nextcloud',
+  'dbhost' => 'localhost',
+  'dbport' => '',
+  'dbtableprefix' => 'oc_',
+  'mysql.utf8mb4' => true,
+  'dbuser' => 'oc_intro',
+  'dbpassword' => 'lflNd0e/lQCk+u9Qq8aqy15G3+hu5d',
+  'installed' => true,
+  'maintenance' => false,
+  'theme' => '',
+  'loglevel' => 2,
+  'allow_local_remote_servers' => true,
+);
